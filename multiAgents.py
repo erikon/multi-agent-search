@@ -168,13 +168,13 @@ class MinimaxAgent(MultiAgentSearchAgent):
         if currIndex >= gameState.getNumAgents():
             currIndex = 0
             currDepth += 1
-        if currDepth == self.depth:
+        if gameState.isWin() or gameState.isLose() or currDepth == self.depth:
             return self.evaluationFunction(gameState)
         if currIndex == self.index:
-            return self.maxValue(gameState, currIndex, currDepth)
-        return self.minValue(gameState, currIndex, currDepth)
+            return self.getMaxValue(gameState, currIndex, currDepth)
+        return self.getMinValue(gameState, currIndex, currDepth)
         
-    def minValue(self, gameState, currIndex, currDepth):
+    def getMinValue(self, gameState, currIndex, currDepth):
         v = ("unknown", float("inf"))
         if gameState.getLegalActions(currIndex):
             for x in gameState.getLegalActions(currIndex):
@@ -182,13 +182,13 @@ class MinimaxAgent(MultiAgentSearchAgent):
                     toReturn = self.value(gameState.generateSuccessor(currIndex, x), currIndex + 1, currDepth)
                     if type(toReturn) is tuple:
                         toReturn = toReturn[1] 
-                    newVal = min(v[1], toReturn)
-                    if newVal is not v[1]:
-                        v = (x, newVal) 
+                    minValue = min(v[1], toReturn)
+                    if minValue is not v[1]:
+                        v = (x, minValue) 
             return v
         return self.evaluationFunction(gameState)
 
-    def maxValue(self, gameState, currIndex, currDepth):
+    def getMaxValue(self, gameState, currIndex, currDepth):
         v = ("unknown", float("-inf"))
         if gameState.getLegalActions(currIndex):
             for x in gameState.getLegalActions(currIndex):
@@ -196,9 +196,9 @@ class MinimaxAgent(MultiAgentSearchAgent):
                     toReturn = self.value(gameState.generateSuccessor(currIndex, x), currIndex + 1, currDepth)
                     if type(toReturn) is tuple:
                         toReturn = toReturn[1] 
-                    newVal = max(v[1], toReturn)
-                    if newVal is not v[1]:
-                        v = (x, newVal)             
+                    maxValue = max(v[1], toReturn)
+                    if maxValue is not v[1]:
+                        v = (x, maxValue)             
             return v
         return self.evaluationFunction(gameState)
 
@@ -206,13 +206,61 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     """
       Your minimax agent with alpha-beta pruning (question 3)
     """
-
     def getAction(self, gameState):
-        """
-          Returns the minimax action using self.depth and self.evaluationFunction
-        """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        curDepth = 0
+        currentAgentIndex = 0
+        alpha = float("-inf")
+        beta = float("inf")
+        val = self.getValue(gameState, currentAgentIndex, curDepth, alpha, beta)
+        return val[0] 
+
+    def getValue(self, gameState, currentAgentIndex, curDepth, alpha, beta): 
+        if currentAgentIndex >= gameState.getNumAgents():
+            currentAgentIndex = 0
+            curDepth += 1
+        if curDepth == self.depth or gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState)
+        if currentAgentIndex == self.index:
+            return self.getMaxValue(gameState, currentAgentIndex, curDepth, alpha, beta)
+        else:
+            return self.getMinValue(gameState, currentAgentIndex, curDepth, alpha, beta)
+        
+    def getMinValue(self, gameState, currentAgentIndex, curDepth, alpha, beta):
+        v = ("unknown", float("inf"))
+        if gameState.getLegalActions(currentAgentIndex):
+            for x in gameState.getLegalActions(currentAgentIndex):
+                if x != "Stop":
+                    toReturn = self.getValue(gameState.generateSuccessor(currentAgentIndex, x), currentAgentIndex + 1, curDepth, alpha, beta)
+                    if type(toReturn) is tuple:
+                        toReturn = toReturn[1]
+                    minValue = min(v[1], toReturn)
+                    if minValue is not v[1]:
+                        v = (x, minValue)             
+                    if v[1] < alpha:
+                        return v
+                    beta = min(beta, v[1])        
+            return v
+        return self.evaluationFunction(gameState)
+
+
+    def getMaxValue(self, gameState, currentAgentIndex, curDepth, alpha, beta):
+        v = ("unknown", float("-inf"))
+        
+        if gameState.getLegalActions(currentAgentIndex):
+            for action in gameState.getLegalActions(currentAgentIndex):
+                if action != "Stop":
+                    toReturn = self.getValue(gameState.generateSuccessor(currentAgentIndex, action), currentAgentIndex + 1, curDepth, alpha, beta)
+                    if type(toReturn) is tuple:
+                        toReturn = toReturn[1] 
+                    vNew = max(v[1], toReturn)
+                    if vNew is not v[1]:
+                        v = (action, vNew) 
+                    if v[1] > beta:
+                        return v
+                    alpha = max(alpha, v[1])
+            return v
+        return self.evaluationFunction(gameState)
+
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -237,7 +285,32 @@ def betterEvaluationFunction(currentGameState):
       DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    successorGameState = currentGameState.generatePacmanSuccessor(action)
+    newPos = successorGameState.getPacmanPosition()
+    newFood = successorGameState.getFood()
+    newGhostStates = successorGameState.getGhostStates()
+    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+    foodDist = -1
+    for food in newFood.asList():
+        if foodDist < 0:
+            foodDist = manhattanDistance(food, newPos)
+        else:
+            foodDist = min(manhattanDistance(food, newPos), foodDist)
+
+    ghost_distances = []
+    for ghost in newGhostStates:
+        ghost_distances.append(manhattanDistance(newPos, ghost.getPosition()))
+
+    total_food = 0
+    for x in range(newPos[0]-2, newPos[0]+3):
+        for y in range(newPos[1]-2, newPos[1]+3):
+            if (0 <= x and x < len(list(newFood))) and (0 <= y and y < len(list(newFood[1]))) and newFood[x][y]:
+                total_food += 1
+
+    total1 = 100.0/foodDist + 100 * successorGameState.getScore()
+    total2 = total1 + min(ghost_distances) if ghost_distances and min(ghost_distances) != 0 else total1 + 1
+    total3 = total2 if len(newFood.asList()) == 0 else total2 + 100.0/len(newFood.asList())
+    return total3 + 1 if total_food == 0 else total3 + total_food
 
 # Abbreviation
 better = betterEvaluationFunction
