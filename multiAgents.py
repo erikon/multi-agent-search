@@ -159,8 +159,48 @@ class MinimaxAgent(MultiAgentSearchAgent):
           gameState.isLose():
             Returns whether or not the game state is a losing state
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        currDepth = 0
+        currIndex = 0
+        val = self.value(gameState, currIndex, currDepth)
+        return val[0]
+
+    def value(self, gameState, currIndex, currDepth): 
+        if currIndex >= gameState.getNumAgents():
+            currIndex = 0
+            currDepth += 1
+        if currDepth == self.depth:
+            return self.evaluationFunction(gameState)
+        if currIndex == self.index:
+            return self.maxValue(gameState, currIndex, currDepth)
+        return self.minValue(gameState, currIndex, currDepth)
+        
+    def minValue(self, gameState, currIndex, currDepth):
+        v = ("unknown", float("inf"))
+        if gameState.getLegalActions(currIndex):
+            for x in gameState.getLegalActions(currIndex):
+                if x != "Stop":
+                    toReturn = self.value(gameState.generateSuccessor(currIndex, x), currIndex + 1, currDepth)
+                    if type(toReturn) is tuple:
+                        toReturn = toReturn[1] 
+                    newVal = min(v[1], toReturn)
+                    if newVal is not v[1]:
+                        v = (x, newVal) 
+            return v
+        return self.evaluationFunction(gameState)
+
+    def maxValue(self, gameState, currIndex, currDepth):
+        v = ("unknown", float("-inf"))
+        if gameState.getLegalActions(currIndex):
+            for x in gameState.getLegalActions(currIndex):
+                if x != "Stop":
+                    toReturn = self.value(gameState.generateSuccessor(currIndex, x), currIndex + 1, currDepth)
+                    if type(toReturn) is tuple:
+                        toReturn = toReturn[1] 
+                    newVal = max(v[1], toReturn)
+                    if newVal is not v[1]:
+                        v = (x, newVal)             
+            return v
+        return self.evaluationFunction(gameState)
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
