@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -72,9 +72,34 @@ class ReflexAgent(Agent):
         newFood = successorGameState.getFood()
         newGhostStates = successorGameState.getGhostStates()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
-
+        # print(newPos)
+        # print(newFood.asList())
+        # print(newGhostStates)
+        # print(newScaredTimes)
+        # print(successorGameState.getScore())
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+
+        foodDist = -1
+        for food in newFood.asList():
+            if foodDist < 0:
+                foodDist = manhattanDistance(food, newPos)
+            else:
+                foodDist = min(manhattanDistance(food, newPos), foodDist)
+
+        ghost_distances = []
+        for ghost in newGhostStates:
+            ghost_distances.append(manhattanDistance(newPos, ghost.getPosition()))
+
+        total_food = 0
+        for x in range(newPos[0]-2, newPos[0]+3):
+            for y in range(newPos[1]-2, newPos[1]+3):
+                if (0 <= x and x < len(list(newFood))) and (0 <= y and y < len(list(newFood[1]))) and newFood[x][y]:
+                    total_food += 1
+
+        total1 = 100.0/foodDist + 100 * successorGameState.getScore()
+        total2 = total1 + min(ghost_distances) if ghost_distances and min(ghost_distances) != 0 else total1 + 1
+        total3 = total2 if len(newFood.asList()) == 0 else total2 + 100.0/len(newFood.asList())
+        return total3 + 1 if total_food == 0 else total3 + total_food
 
 def scoreEvaluationFunction(currentGameState):
     """
@@ -176,4 +201,3 @@ def betterEvaluationFunction(currentGameState):
 
 # Abbreviation
 better = betterEvaluationFunction
-
