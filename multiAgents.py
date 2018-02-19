@@ -175,7 +175,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         return self.getMinValue(gameState, currIndex, currDepth)
         
     def getMinValue(self, gameState, currIndex, currDepth):
-        v = ("unknown", float("inf"))
+        v = ("penis", float("inf"))
         if gameState.getLegalActions(currIndex):
             for x in gameState.getLegalActions(currIndex):
                 if x != "Stop":
@@ -189,7 +189,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         return self.evaluationFunction(gameState)
 
     def getMaxValue(self, gameState, currIndex, currDepth):
-        v = ("unknown", float("-inf"))
+        v = ("penis", float("-inf"))
         if gameState.getLegalActions(currIndex):
             for x in gameState.getLegalActions(currIndex):
                 if x != "Stop":
@@ -207,30 +207,30 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
       Your minimax agent with alpha-beta pruning (question 3)
     """
     def getAction(self, gameState):
-        curDepth = 0
-        currentAgentIndex = 0
+        currDepth = 0
+        currIndex = 0
         alpha = float("-inf")
         beta = float("inf")
-        val = self.getValue(gameState, currentAgentIndex, curDepth, alpha, beta)
+        val = self.getValue(gameState, currIndex, currDepth, alpha, beta)
         return val[0] 
 
-    def getValue(self, gameState, currentAgentIndex, curDepth, alpha, beta): 
-        if currentAgentIndex >= gameState.getNumAgents():
-            currentAgentIndex = 0
-            curDepth += 1
-        if curDepth == self.depth or gameState.isWin() or gameState.isLose():
+    def getValue(self, gameState, currIndex, currDepth, alpha, beta): 
+        if currIndex >= gameState.getNumAgents():
+            currIndex = 0
+            currDepth += 1
+        if currDepth == self.depth or gameState.isWin() or gameState.isLose():
             return self.evaluationFunction(gameState)
-        if currentAgentIndex == self.index:
-            return self.getMaxValue(gameState, currentAgentIndex, curDepth, alpha, beta)
+        if currIndex == self.index:
+            return self.getMaxValue(gameState, currIndex, currDepth, alpha, beta)
         else:
-            return self.getMinValue(gameState, currentAgentIndex, curDepth, alpha, beta)
+            return self.getMinValue(gameState, currIndex, currDepth, alpha, beta)
         
-    def getMinValue(self, gameState, currentAgentIndex, curDepth, alpha, beta):
-        v = ("unknown", float("inf"))
-        if gameState.getLegalActions(currentAgentIndex):
-            for x in gameState.getLegalActions(currentAgentIndex):
+    def getMinValue(self, gameState, currIndex, currDepth, alpha, beta):
+        v = ("penis", float("inf"))
+        if gameState.getLegalActions(currIndex):
+            for x in gameState.getLegalActions(currIndex):
                 if x != "Stop":
-                    toReturn = self.getValue(gameState.generateSuccessor(currentAgentIndex, x), currentAgentIndex + 1, curDepth, alpha, beta)
+                    toReturn = self.getValue(gameState.generateSuccessor(currIndex, x), currIndex + 1, currDepth, alpha, beta)
                     if type(toReturn) is tuple:
                         toReturn = toReturn[1]
                     minValue = min(v[1], toReturn)
@@ -243,18 +243,18 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         return self.evaluationFunction(gameState)
 
 
-    def getMaxValue(self, gameState, currentAgentIndex, curDepth, alpha, beta):
-        v = ("unknown", float("-inf"))
+    def getMaxValue(self, gameState, currIndex, currDepth, alpha, beta):
+        v = ("penis", float("-inf"))
         
-        if gameState.getLegalActions(currentAgentIndex):
-            for action in gameState.getLegalActions(currentAgentIndex):
+        if gameState.getLegalActions(currIndex):
+            for action in gameState.getLegalActions(currIndex):
                 if action != "Stop":
-                    toReturn = self.getValue(gameState.generateSuccessor(currentAgentIndex, action), currentAgentIndex + 1, curDepth, alpha, beta)
+                    toReturn = self.getValue(gameState.generateSuccessor(currIndex, action), currIndex + 1, currDepth, alpha, beta)
                     if type(toReturn) is tuple:
                         toReturn = toReturn[1] 
-                    vNew = max(v[1], toReturn)
-                    if vNew is not v[1]:
-                        v = (action, vNew) 
+                    maxValue = max(v[1], toReturn)
+                    if maxValue is not v[1]:
+                        v = (action, maxValue) 
                     if v[1] > beta:
                         return v
                     alpha = max(alpha, v[1])
@@ -274,8 +274,51 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing uniformly at random from their
           legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        currDepth = 0
+        currIndex = 0
+        val = self.value(gameState, currIndex, currDepth)
+        return val[0]
+
+    def value(self, gameState, currIndex, currDepth): 
+        if currIndex >= gameState.getNumAgents():
+            currIndex = 0
+            currDepth += 1
+        if currDepth == self.depth:
+            return self.evaluationFunction(gameState)
+        if currIndex == self.index:
+            return self.getMaxValue(gameState, currIndex, currDepth)
+        else:
+            return self.getExpValue(gameState, currIndex, currDepth)
+        
+    def getExpValue(self, gameState, currIndex, currDepth):
+        v = ["penis", 0]
+        if gameState.getLegalActions(currIndex):
+            for action in gameState.getLegalActions(currIndex):
+                if action != "Stop":                
+                    toReturn = self.value(gameState.generateSuccessor(currIndex, action), currIndex + 1, currDepth)
+                    if type(toReturn) is tuple:
+                        toReturn = toReturn[1] 
+                    v[0] = action
+                    v[1] += toReturn / len(gameState.getLegalActions(currIndex))            
+            return tuple(v)
+        return self.evaluationFunction(gameState)
+
+
+    def getMaxValue(self, gameState, currIndex, currDepth):
+        v = ("penis", float("-inf"))
+        
+        if not gameState.getLegalActions(currIndex):
+            return self.evaluationFunction(gameState)
+
+        for action in gameState.getLegalActions(currIndex):
+            if action != "Stop":
+                toReturn = self.value(gameState.generateSuccessor(currIndex, action), currIndex + 1, currDepth)
+                if type(toReturn) is tuple:
+                    toReturn = toReturn[1] 
+                maxValue = max(v[1], toReturn)
+                if maxValue is not v[1]:
+                    v = (action, maxValue) 
+        return v
 
 def betterEvaluationFunction(currentGameState):
     """
