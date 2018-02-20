@@ -164,7 +164,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         val = self.value(gameState, currIndex, currDepth)
         return val[0]
 
-    def value(self, gameState, currIndex, currDepth): 
+    def value(self, gameState, currIndex, currDepth):
         if currIndex >= gameState.getNumAgents():
             currIndex = 0
             currDepth += 1
@@ -173,7 +173,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         if currIndex == self.index:
             return self.getMaxValue(gameState, currIndex, currDepth)
         return self.getMinValue(gameState, currIndex, currDepth)
-        
+
     def getMinValue(self, gameState, currIndex, currDepth):
         v = ("penis", float("inf"))
         if gameState.getLegalActions(currIndex):
@@ -181,10 +181,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 if x != "Stop":
                     toReturn = self.value(gameState.generateSuccessor(currIndex, x), currIndex + 1, currDepth)
                     if type(toReturn) is tuple:
-                        toReturn = toReturn[1] 
+                        toReturn = toReturn[1]
                     minValue = min(v[1], toReturn)
                     if minValue is not v[1]:
-                        v = (x, minValue) 
+                        v = (x, minValue)
             return v
         return self.evaluationFunction(gameState)
 
@@ -195,10 +195,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 if x != "Stop":
                     toReturn = self.value(gameState.generateSuccessor(currIndex, x), currIndex + 1, currDepth)
                     if type(toReturn) is tuple:
-                        toReturn = toReturn[1] 
+                        toReturn = toReturn[1]
                     maxValue = max(v[1], toReturn)
                     if maxValue is not v[1]:
-                        v = (x, maxValue)             
+                        v = (x, maxValue)
             return v
         return self.evaluationFunction(gameState)
 
@@ -212,9 +212,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         alpha = float("-inf")
         beta = float("inf")
         val = self.getValue(gameState, currIndex, currDepth, alpha, beta)
-        return val[0] 
+        return val[0]
 
-    def getValue(self, gameState, currIndex, currDepth, alpha, beta): 
+    def getValue(self, gameState, currIndex, currDepth, alpha, beta):
         if currIndex >= gameState.getNumAgents():
             currIndex = 0
             currDepth += 1
@@ -224,7 +224,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             return self.getMaxValue(gameState, currIndex, currDepth, alpha, beta)
         else:
             return self.getMinValue(gameState, currIndex, currDepth, alpha, beta)
-        
+
     def getMinValue(self, gameState, currIndex, currDepth, alpha, beta):
         v = ("penis", float("inf"))
         if gameState.getLegalActions(currIndex):
@@ -235,26 +235,26 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                         toReturn = toReturn[1]
                     minValue = min(v[1], toReturn)
                     if minValue is not v[1]:
-                        v = (x, minValue)             
+                        v = (x, minValue)
                     if v[1] < alpha:
                         return v
-                    beta = min(beta, v[1])        
+                    beta = min(beta, v[1])
             return v
         return self.evaluationFunction(gameState)
 
 
     def getMaxValue(self, gameState, currIndex, currDepth, alpha, beta):
         v = ("penis", float("-inf"))
-        
+
         if gameState.getLegalActions(currIndex):
             for action in gameState.getLegalActions(currIndex):
                 if action != "Stop":
                     toReturn = self.getValue(gameState.generateSuccessor(currIndex, action), currIndex + 1, currDepth, alpha, beta)
                     if type(toReturn) is tuple:
-                        toReturn = toReturn[1] 
+                        toReturn = toReturn[1]
                     maxValue = max(v[1], toReturn)
                     if maxValue is not v[1]:
-                        v = (action, maxValue) 
+                        v = (action, maxValue)
                     if v[1] > beta:
                         return v
                     alpha = max(alpha, v[1])
@@ -279,7 +279,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         val = self.value(gameState, currIndex, currDepth)
         return val[0]
 
-    def value(self, gameState, currIndex, currDepth): 
+    def value(self, gameState, currIndex, currDepth):
         if currIndex >= gameState.getNumAgents():
             currIndex = 0
             currDepth += 1
@@ -289,24 +289,24 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             return self.getMaxValue(gameState, currIndex, currDepth)
         else:
             return self.getExpValue(gameState, currIndex, currDepth)
-        
+
     def getExpValue(self, gameState, currIndex, currDepth):
         v = ["penis", 0]
         if gameState.getLegalActions(currIndex):
             for action in gameState.getLegalActions(currIndex):
-                if action != "Stop":                
+                if action != "Stop":
                     toReturn = self.value(gameState.generateSuccessor(currIndex, action), currIndex + 1, currDepth)
                     if type(toReturn) is tuple:
-                        toReturn = toReturn[1] 
+                        toReturn = toReturn[1]
                     v[0] = action
-                    v[1] += toReturn / len(gameState.getLegalActions(currIndex))            
+                    v[1] += toReturn / len(gameState.getLegalActions(currIndex))
             return tuple(v)
         return self.evaluationFunction(gameState)
 
 
     def getMaxValue(self, gameState, currIndex, currDepth):
         v = ("penis", float("-inf"))
-        
+
         if not gameState.getLegalActions(currIndex):
             return self.evaluationFunction(gameState)
 
@@ -314,10 +314,10 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             if action != "Stop":
                 toReturn = self.value(gameState.generateSuccessor(currIndex, action), currIndex + 1, currDepth)
                 if type(toReturn) is tuple:
-                    toReturn = toReturn[1] 
+                    toReturn = toReturn[1]
                 maxValue = max(v[1], toReturn)
                 if maxValue is not v[1]:
-                    v = (action, maxValue) 
+                    v = (action, maxValue)
         return v
 
 def betterEvaluationFunction(currentGameState):
@@ -325,35 +325,56 @@ def betterEvaluationFunction(currentGameState):
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
       evaluation function (question 5).
 
-      DESCRIPTION: <write something here so we know what you did>
+      DESCRIPTION:
+        Factors to consider:
+            - Food distance
+            - Ghost distances
+            - Leftover food
+            - If a Ghost is Scared
+            - The 'Special Dot'
+            - Current Game Score
+
+        Deduct from total 'weight' for remaining food dots and if a Ghost is NOT scared
+        Each factor is scaled to a value that indicates its significance:
+            - Game Score is most signifcant
+            - The special dot is weighted more than others because of its effects on the ghosts
+            - Food distances are the next most important value
+            - Ghosts are split into 2 states:
+                1. If the Ghost is normal (not scared), it has a negative value of 100/<Distance from Current Position>
+                2. If the Ghost is scared, it is ok to be closer to a ghost (and they more points for being eaten)
+            - Remaing Food is left as is
+
     """
-    "*** YOUR CODE HERE ***"
-    successorGameState = currentGameState.generatePacmanSuccessor(action)
-    newPos = successorGameState.getPacmanPosition()
-    newFood = successorGameState.getFood()
-    newGhostStates = successorGameState.getGhostStates()
-    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+    newPos = currentGameState.getPacmanPosition()
+    newFood = [food for food in currentGameState.getFood().asList() if food]
+    newGhostStates = currentGameState.getGhostStates()
+    newScaredTimes = [ghost.scaredTimer for ghost in newGhostStates]
+
+    # From OG EvaluationFunction
     foodDist = -1
-    for food in newFood.asList():
+    for food in newFood:
         if foodDist < 0:
             foodDist = manhattanDistance(food, newPos)
         else:
             foodDist = min(manhattanDistance(food, newPos), foodDist)
 
-    ghost_distances = []
+    ghostDist = []
     for ghost in newGhostStates:
-        ghost_distances.append(manhattanDistance(newPos, ghost.getPosition()))
+        ghostDist.append(manhattanDistance(newPos, ghost.getPosition()))
 
-    total_food = 0
-    for x in range(newPos[0]-2, newPos[0]+3):
-        for y in range(newPos[1]-2, newPos[1]+3):
-            if (0 <= x and x < len(list(newFood))) and (0 <= y and y < len(list(newFood[1]))) and newFood[x][y]:
-                total_food += 1
+    # New Features
+    remainingFood = len(newFood)                               # We don't want remaining Food (less is better)
+    scaredTime = min(newScaredTimes)                           # Minimize the 'danger' level of a ghost (smaller the number, more dangerous a ghost becomes)
+    if scaredTime == 0:
+        ghostDistScore = -100 / (min(ghostDist) + 1)           # Ghost is most dangerous since they are not scared
+    else:
+        ghostDistScore = 50 / (min(ghostDist) + 1) * 0.5       # Ghost is not as dangerous because they are scared
 
-    total1 = 100.0/foodDist + 100 * successorGameState.getScore()
-    total2 = total1 + min(ghost_distances) if ghost_distances and min(ghost_distances) != 0 else total1 + 1
-    total3 = total2 if len(newFood.asList()) == 0 else total2 + 100.0/len(newFood.asList())
-    return total3 + 1 if total_food == 0 else total3 + total_food
+    foodDist = 60 / (foodDist + 1) if foodDist > 0 else 60     # Minimum food distances (scaled by weight)
+    specialDot = scaredTime                                    # Scaling the special dot because it impacts the scared times
+    gameScore = currentGameState.getScore()                    # Current game score is very important
+
+    return (gameScore * 100) - remainingFood + (specialDot * 80) + foodDist + ghostDistScore
 
 # Abbreviation
 better = betterEvaluationFunction
